@@ -42,7 +42,7 @@ Add a server entry to your project's `.vscode/mcp.json`:
 
 ## Template notes
 
-Your project should have `copilot-session_log/_TEMPLATE.md`.
+Your project should have `copilot-session-log/_TEMPLATE.md`.
 
 To ensure the transcript lands where you want it, include `{{TRANSCRIPT}}` in the template.
 

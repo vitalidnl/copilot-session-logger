@@ -10,6 +10,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 type SaveCopilotSessionArgs = {
   transcriptMarkdown?: string;
+  messages?: Array<{ role?: string; content?: string }>;
   savedAt?: string;
   workspaceRoot?: string;
 };
@@ -68,6 +69,27 @@ function applyTemplate(template: string, replacements: Record<string, string>): 
   return out;
 }
 
+function titleCaseRole(role: string): string {
+  const normalized = role.trim().toLowerCase();
+  if (!normalized) return "Message";
+  if (normalized === "user") return "User";
+  if (normalized === "assistant") return "Assistant";
+  if (normalized === "system") return "System";
+  if (normalized === "tool") return "Tool";
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function renderTranscriptFromMessages(messages: Array<{ role?: string; content?: string }>): string {
+  return messages
+    .map((m) => {
+      const role = titleCaseRole(m.role ?? "message");
+      const content = (m.content ?? "").trimEnd();
+      return `### ${role}\n\n${content}\n`;
+    })
+    .join("\n")
+    .trim();
+}
+
 async function loadOrCreateTemplate(logRoot: string): Promise<string> {
   const templatePath = path.join(logRoot, "_TEMPLATE.md");
   if (await fileExists(templatePath)) {
@@ -109,11 +131,17 @@ async function saveCopilotSession(args: SaveCopilotSessionArgs): Promise<{ saved
 
   const template = await loadOrCreateTemplate(logRoot);
 
-  const transcript = (args.transcriptMarkdown ?? "").trim();
+  let transcript = (args.transcriptMarkdown ?? "").trim();
+  if (!transcript) {
+    if (Array.isArray(args.messages) && args.messages.length > 0) {
+      transcript = renderTranscriptFromMessages(args.messages);
+    }
+  }
+
   if (!transcript) {
     return {
       error:
-        "No transcript provided. This tool expects Copilot to pass the full conversation Markdown as 'transcriptMarkdown' when invoking save-copilot-session.",
+        "No transcript provided. Pass either 'transcriptMarkdown' (preferred) or 'messages' (array of {role, content}) so the tool can write the full conversation without summarizing.",
     };
   }
 
@@ -161,7 +189,19 @@ async function main(): Promise<void> {
               transcriptMarkdown: {
                 type: "string",
                 description:
-                  "Full conversation transcript in Markdown. The client (Copilot) should populate this automatically when you run the command.",
+                  "Full conversation transcript in Markdown. This server writes it verbatim (no summarization). The client (Copilot) should populate this automatically when you run the command.",
+              },
+              messages: {
+                type: "array",
+                description:
+                  "Alternative to transcriptMarkdown: array of messages that will be rendered to Markdown verbatim as ### User/Assistant sections.",
+                items: {
+                  type: "object",
+                  properties: {
+                    role: { type: "string", description: "user | assistant | system | tool" },
+                    content: { type: "string", description: "Message content (Markdown allowed)." },
+                  },
+                },
               },
               savedAt: {
                 type: "string",

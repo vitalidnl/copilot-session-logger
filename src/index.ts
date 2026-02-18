@@ -76,6 +76,13 @@ async function loadOrCreateTemplate(logRoot: string): Promise<string> {
 
   const defaultTemplate =
     "# Copilot chat session {{DATE}} {{TIME_COLON}}\n\n" +
+    "## Session Info\n" +
+    "- Project folder: {{PROJECT_NAME}}\n" +
+    "- Workspace root: {{WORKSPACE_ROOT}}\n" +
+    "- OS: {{OS}}\n" +
+    "- Model: {{MODEL}}\n" +
+    "- Saved at: {{DATE}} {{TIME_COLON}}\n" +
+    "- Output path: `copilot-session-log/{{DATE}}/session_{{TIME_DASH_MS}}.md`\n\n" +
     "## Conversation\n\n" +
     "{{TRANSCRIPT}}\n";
 
@@ -90,7 +97,7 @@ async function saveCopilotSession(args: SaveCopilotSessionArgs): Promise<{ saved
   }
 
   const workspaceRoot = args.workspaceRoot ?? process.cwd();
-  const logRoot = path.join(workspaceRoot, "copilot-session_log");
+  const logRoot = path.join(workspaceRoot, "copilot-session-log");
   const dateFolder = formatDateFolder(savedAt);
   const timeDashMs = formatTimeDashMs(savedAt);
 
@@ -147,7 +154,7 @@ async function main(): Promise<void> {
         {
           name: "save-copilot-session",
           description:
-            "Saves the current Copilot chat session to copilot-session_log/{dd-MM-yyyy}/session_{HH-mm-ss-SSS}.md (milliseconds included) using copilot-session_log/_TEMPLATE.md. IMPORTANT: when invoking, include the full chat transcript as Markdown in transcriptMarkdown.",
+            "Saves the current Copilot chat session to copilot-session-log/{dd-MM-yyyy}/session_{HH-mm-ss-SSS}.md (milliseconds included) using copilot-session-log/_TEMPLATE.md. IMPORTANT: when invoking, include the full chat transcript as Markdown in transcriptMarkdown.",
           inputSchema: {
             type: "object",
             properties: {

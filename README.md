@@ -6,8 +6,8 @@ Local-only MCP server that provides a single tool: `save-copilot-session`.
 
 When you run `save-copilot-session`, it writes a Markdown file using the workspace template:
 
-- Template: `copilot-session_log/_TEMPLATE.md`
-- Output: `copilot-session_log/{dd-MM-yyyy}/session_{HH-mm-ss-SSS}.md` (milliseconds included)
+- Template: `copilot-session-log/_TEMPLATE.md`
+- Output: `copilot-session-log/{dd-MM-yyyy}/session_{HH-mm-ss-SSS}.md` (milliseconds included)
 
 The `{dd-MM-yyyy}` folder is based on **when you save** (not the session start time).
 

@@ -48,7 +48,14 @@ To ensure the transcript lands where you want it, include `{{TRANSCRIPT}}` in th
 
 ## Tool input
 
-- `transcriptMarkdown` (string): full conversation transcript in Markdown (Copilot should populate this automatically when you invoke the command)
+- `transcriptMarkdown` (string): full conversation transcript in Markdown (written verbatim; no summarization)
+- `messages` (array, optional): alternative to `transcriptMarkdown`; array of `{ role, content }` messages that will be rendered into Markdown as `### User` / `### Assistant` sections
 - `savedAt` (string, optional): ISO-8601 datetime
 
-If `transcriptMarkdown` is missing, the tool returns an error explaining that the client must supply it.
+If neither `transcriptMarkdown` nor `messages` are provided, the tool returns an error.
+
+## Note on “full assistant responses”
+
+This server **does not** summarize. It saves exactly what the client provides.
+
+If you notice assistant sections are “too compact”, it means the client sent a compact transcript. In that case, invoke the tool in a way that provides the full text (either as `transcriptMarkdown` or as `messages`).
